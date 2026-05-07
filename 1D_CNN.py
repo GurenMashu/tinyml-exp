@@ -24,7 +24,7 @@ EPOCHS = 50
 LEARNING_RATE = 1e-3
 PATIENCE =  7    #for early stopping
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-SAVE_PATH = "models/posture_mlp.pth"
+SAVE_PATH = "models/posture_1D_CNN.pth"
 
 os.makedirs("models", exist_ok=True)
 
@@ -42,22 +42,22 @@ class PostureSensorDataset(Dataset):
         return torch.tensor(self.x[idx]), torch.tensor(self.y[idx])
     
 #model
-class PostureSensorMLP(nn.Module):
+class PostureSensor1D_CNN(nn.Module):
     def __init__(self, input_dim = 6, num_classes = 5):
         super().__init__()
         self.net = nn.Sequential(
-            nn.Linear(input_dim, 64),
-            nn.BatchNorm1d(64),
+            nn.Conv1d(in_channels=1, out_channels=4, kernel_size=3, padding=1),
             nn.ReLU(),
-            nn.Dropout(0.3),
-            nn.Linear(64, 32),
-            nn.BatchNorm1d(32),
+            nn.Conv1d(in_channels=4, out_channels=8, kernel_size=3, padding=1),
             nn.ReLU(),
-            nn.Dropout(0.2),
-            nn.Linear(32, num_classes)
+            nn.AdaptiveAvgPool1d(1),
+            nn.Flatten(),
+            nn.Linear(in_features=8, out_features=num_classes)
         )
     
     def forward(self, x):
+        if x.dim() == 2:
+            x = x.unsqueeze(1)
         return self.net(x)
 
 #helpers
@@ -88,7 +88,8 @@ def log_model_metrics(model, test_loader, model_path, model_name, device, csv_pa
     
     for _ in range(10): 
         model(dummy)  # Warmup
-    if device.type == "cuda": torch.cuda.synchronize()
+    if device.type == "cuda": 
+        torch.cuda.synchronize()
     
     start = time.perf_counter()
     for _ in range(100): 
@@ -155,7 +156,7 @@ def main():
     class_weights = compute_class_weights(os.path.join(DATA_DIR, "train.csv"))
     criterion = nn.CrossEntropyLoss(weight=class_weights)
 
-    model = PostureSensorMLP(input_dim=6, num_classes=NUM_CLASSES).to(DEVICE)
+    model = PostureSensor1D_CNN(input_dim=6, num_classes=NUM_CLASSES).to(DEVICE)
     optimizer = optim.AdamW(model.parameters(), lr=LEARNING_RATE, weight_decay=1e-4)
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode="min", factor=0.5, patience=3)
 
@@ -218,7 +219,7 @@ def main():
         model=model,
         test_loader=test_loader_final,
         model_path=SAVE_PATH,
-        model_name="MLP_64_32_Dropout",  # Change per experiment
+        model_name="1D_CNN",  # Change per experiment
         device=DEVICE
     )
     

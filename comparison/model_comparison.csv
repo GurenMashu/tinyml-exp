@@ -1,0 +1,5 @@
+model_name,accuracy,size_mb,num_parameters,latency_ms_per_sample
+MLP_64_32_Dropout,0.9764,0.017,2819,0.0725
+1D_CNN,0.9725,0.0035,147,0.1205
+MLP_FP16,0.9764,0.0114,2819,0.0815
+MLP_INT8_DYNAMIC,0.9765,0.0121,192,0.1386
