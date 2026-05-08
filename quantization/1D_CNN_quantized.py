@@ -15,11 +15,10 @@ FEATURE_COLS = [
 ]
 TARGET_COL = "posture_label"
 BATCH_SIZE = 256
-MODEL_PATH = "models/posture_1D_CNN.pth"  # ⬅️ Update to your saved 1D CNN path
+MODEL_PATH = "saved_models/posture_1D_CNN.pth" 
 CSV_PATH = "comparison/model_comparison.csv"
 os.makedirs("comparison", exist_ok=True)
 
-# ================= DATASET =================
 class PostureSensorDataset(Dataset):
     def __init__(self, csv_path):
         self.df = pd.read_csv(csv_path)
@@ -30,7 +29,6 @@ class PostureSensorDataset(Dataset):
     def __getitem__(self, idx): 
         return torch.tensor(self.x[idx]), torch.tensor(self.y[idx])
     
-# ================= 1D CNN ARCHITECTURE =================
 class PostureSensor1D_CNN(nn.Module):
     def __init__(self, input_features=6, num_classes=5):
         super().__init__()
@@ -50,7 +48,7 @@ class PostureSensor1D_CNN(nn.Module):
             x = x.unsqueeze(1)
         return self.net(x)
 
-# ================= HELPERS (unchanged) =================
+#helpers------------------------------------------------------------------------------------------------------
 def load_base_model(model_path, num_classes, device):
     model = PostureSensor1D_CNN(input_features=6, num_classes=num_classes)
     model.load_state_dict(torch.load(model_path, map_location=device, weights_only=True))
@@ -112,8 +110,8 @@ def log_model_metrics(model, test_loader, model_path, model_name, device, csv_pa
     df.to_csv(csv_path, index=False)
     print(f"Logged {model_name} → {csv_path}")
     return row
+#-------------------------------------------------------------------------------------------
 
-# ================= MAIN =================
 def main():
     # Quantization in PyTorch is CPU-targeted
     device = torch.device("cpu")

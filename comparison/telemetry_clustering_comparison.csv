@@ -1,0 +1,2 @@
+Model_name,Silhouette_score,Davies_Bouldin Index,Calinski_Harabasz Index,Inertia,Size,batch_size_latency,avg_inference_latency_ms,p95_inference_latency_ms
+kmeans_3_clusters,0.558717887394042,0.685211977891183,499492.32416482206,608185.2997667767,1.5468053817749023,500,0.331,1.21

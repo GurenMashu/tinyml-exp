@@ -16,7 +16,7 @@ FEATURE_COLS = [
 ]
 TARGET_COL = "posture_label"
 BATCH_SIZE = 256
-MODEL_PATH = "models/posture_mlp.pth"  # ⬅️ Update to your saved MLP path
+MODEL_PATH = "saved_models/posture_mlp.pth"  # ⬅️ Update to your saved MLP path
 CSV_PATH = "comparison/model_comparison.csv"
 os.makedirs("comparison", exist_ok=True)
 

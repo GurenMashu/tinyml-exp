@@ -24,7 +24,7 @@ EPOCHS = 50
 LEARNING_RATE = 1e-3
 PATIENCE =  7    #for early stopping
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-SAVE_PATH = "models/posture_mlp.pth"
+SAVE_PATH = "saved_models/posture_mlp.pth"
 
 os.makedirs("models", exist_ok=True)
 
@@ -60,7 +60,7 @@ class PostureSensorMLP(nn.Module):
     def forward(self, x):
         return self.net(x)
 
-#helpers
+#helpers------------------------------------------------------------------------------------------------------------------------
 def log_model_metrics(model, test_loader, model_path, model_name, device, csv_path="comparison/model_comparison.csv"):
     model.eval()
     
@@ -142,6 +142,7 @@ def evaluate(model, dataloader, criterion):
             correct += (predicted == y).sum().item()
             total += y.size(0)
     return total_loss / total, correct / total
+#---------------------------------------------------------------------------------------------------------------
 
 #training
 def main():
