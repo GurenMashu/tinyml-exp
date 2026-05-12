@@ -1,3 +1,5 @@
+#kmeans implementation with scikit-learn.
+
 import os
 import time
 import numpy as np
