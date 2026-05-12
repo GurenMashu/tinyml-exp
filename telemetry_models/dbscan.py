@@ -16,12 +16,11 @@ CSV_PATH = Path("comparison/telemetry_clustering_comparison.csv")
 os.makedirs(SAVE_PATH, exist_ok=True)
 
 data_df = pd.read_csv(INPUT_DATA)
-feature_cols = ['co', 'humidity', 'lpg', 'temp']
 
 #model
 print("Training ...")
 model = DBSCAN(eps = 0.5, min_samples=5)
-labels = model.fit_predict(data_df[feature_cols])
+labels = model.fit_predict(data_df)
 
 n_clusters = len(set(labels)) - (1 if -1 in labels else 0)
 n_noise = list(labels).count(-1)

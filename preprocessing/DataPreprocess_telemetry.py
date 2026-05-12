@@ -18,7 +18,7 @@ df = df.drop(columns=["ts","device"])
 df["light"] = df["light"].astype(int)
 df["motion"] = df["motion"].astype(int)
 
-feature_cols = ["co", "humidity", "lpg", "temp", "smoke"]
+feature_cols = ["co", "humidity", "lpg", "temp", "smoke", "light", "motion"]
 
 scaler = StandardScaler()
 df[feature_cols] = scaler.fit_transform(df[feature_cols])
