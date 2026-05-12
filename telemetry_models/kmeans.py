@@ -16,11 +16,12 @@ CSV_PATH = Path("comparison/telemetry_clustering_comparison.csv")
 os.makedirs(SAVE_PATH, exist_ok=True)
 
 data_df = pd.read_csv(INPUT_DATA)
+feature_cols = ['co', 'humidity', 'lpg', 'temp']
 
 #model
 print("Training ...")
 model = KMeans(n_clusters=3, random_state=77)
-model.fit(data_df)
+model.fit(data_df[feature_cols])
 
 #clustering quality metrics
 silhouette = silhouette_score(data_df, model.labels_)
