@@ -122,15 +122,13 @@ def main():
     train_df = pd.read_csv(os.path.join(DATA_DIR, "train.csv"))
     num_classes = train_df[TARGET_COL].nunique()
 
-    # 1️⃣ FP16 (Half Precision)
-    print("Applying FP16...")
+    #FP16 (Half Precision)
     model_fp16 = load_base_model(MODEL_PATH, num_classes, device).half()
     save_path = MODEL_PATH.replace(".pth", "_fp16.pth")
     torch.save(model_fp16.state_dict(), save_path)
     log_model_metrics(model_fp16, test_loader, save_path, "MLP_FP16", device)
 
-    # 2️⃣ INT8 Dynamic Quantization
-    print("Applying INT8 Dynamic...")
+    #INT8 Dynamic Quantization
     model_base = load_base_model(MODEL_PATH, num_classes, "cpu")
     model_dyn = torch.ao.quantization.quantize_dynamic(model_base, {nn.Linear}, dtype=torch.qint8)
     save_path = MODEL_PATH.replace(".pth", "_int8_dynamic.pth")
