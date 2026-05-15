@@ -7,7 +7,7 @@ from pathlib import Path
 
 DATA_DIR = "data/preprocessed_smartposture_data"
 CSV_PATH = "comparison/model_comparison.csv"
-MODEL_SAVE_PATH = "models/posture_xgboost.json"
+MODEL_SAVE_PATH = "saved_models/posture_xgboost.json"
 os.makedirs("comparison", exist_ok=True)
 os.makedirs("models", exist_ok=True)
 
@@ -25,7 +25,7 @@ X_test, y_test = test_df[feature_cols].values, test_df[target_col].values
 num_classes = len(np.unique(y_train))
 
 model = xgb.XGBClassifier(
-    objective = "mutli:softprob",
+    objective = "multi:softprob",
     num_classes = num_classes,
     max_depth = 4,
     n_estimators = 150,
