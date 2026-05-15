@@ -1,3 +1,5 @@
+# has issues to be fixed
+
 import os
 import torch
 import torch.nn as nn
@@ -15,7 +17,7 @@ os.makedirs(MODEL_SAVE_PATH, exist_ok=True)
 class MaintenanceData(Dataset):
     def __init__(self, sequences, labels):
         self.sequences = torch.tensor(sequences, dtype=torch.float32)
-        self.labels = torch.FloatTensor(labels, dtype=torch.float32)
+        self.labels = torch.tensor(labels, dtype=torch.float32)
 
     def __len__(self):
         return len(self.labels)
@@ -75,4 +77,76 @@ test_dataset = MaintenanceData(X_test, y_test)
 
 train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
+
+#-----------Training--------------------------------
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+#hyperparameters
+hidden_size = 64
+num_layers = 2
+lr = 0.001
+epochs = 50
+
+model = LSTMModel(7, hidden_size, num_layers).to(device)
+criterion = nn.BCELoss()
+optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+
+best_test_acc = 0 
+best_model_state = None
+
+for epoch in range(epochs):
+    model.train()
+    train_loss = 0
+    correct = 0
+    total = 0
+
+    for sequences, labels in train_loader:
+        sequences, labels = sequences.to(device), labels.to(device)
+
+        # forward pass
+        outputs = model(sequences)
+        loss = criterion(outputs, labels)
+
+        # backward pass
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+        
+        train_loss += loss.item()
+
+        predicted = (outputs >= 0.5).float()
+        total += labels.size(0)
+        correct += (predicted == labels).sum().item()
+    
+    avg_train_loss = train_loss / len(train_loader)      # averaging the train loss for one epoch
+    train_acc = correct/total     # fraction of correct ones
+
+    model.eval()
+    test_loss = 0
+    correct = 0
+    total = 0
+
+    with torch.no_grad():
+        for sequences, labels in test_loader:
+            sequences, labels = sequences.to(device), labels.to(device)
+
+            outputs = model(sequences)
+            loss = criterion(outputs, labels)
+
+            test_loss +=  loss.item()
+
+            predicted = (outputs >= 0.5).float()
+            total += labels.size(0)
+            correct += (predicted == labels).sum().item()
+
+    avg_test_loss = test_loss / len(test_loader)
+    test_acc = correct / total
+
+    if test_acc > best_test_acc:
+        best_test_acc = test_acc
+        best_model_state = model.state_dict().copy()
+        torch.save(best_model_state, os.path.join(MODEL_SAVE_PATH, "maintenance_lstm.pth"))
+    
+    if (epoch + 1) % 10 == 0:
+            print(f'Epoch [{epoch+1}/{epochs}], 'f'Train Loss: {avg_train_loss:.4f}, Train Acc: {train_acc:.4f}, 'f'Test Loss: {avg_test_loss:.4f}, Test Acc: {test_acc:.4f}')
 
