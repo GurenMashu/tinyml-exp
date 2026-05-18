@@ -3,7 +3,7 @@ import pandas as pd
 from collections import Counter
 from sklearn.preprocessing import StandardScaler
 
-DATA_PATH = "datasets/predictive_maintenance_dataset.csv"
+DATA_PATH = "datasets/predictive_maintenance_dataset.csv"    # https://www.kaggle.com/datasets/ziya07/iot-integrated-predictive-maintenance-dataset
 SAVE_PATH = "data/preprocessed_maintenance_data"
 
 os.makedirs(SAVE_PATH, exist_ok=True)
