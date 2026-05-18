@@ -4,7 +4,7 @@ import torch.onnx
 import torch.nn as nn
 
 SAVE_PATH = "saved_telemetry_models/telemetry_mlp.onnx"
-device = torch.device("cpu")
+device = torch.device("cpu")               # stick with cpu for conversion to prevent unwanted tracing mechanisms in gpu assisted conversion
 
 class TelemetryMLP(nn.Module):
     def __init__(self, input_dim=7, num_classes=6, dropout_rate=0.3):
@@ -35,7 +35,7 @@ sample_input = torch.randn(1, 7).to(device)
 
 torch.onnx.export(
     model,
-    sample_input,
+    sample_input,     # we pass a sample input to activate the model's computation graph | unlike for tensorflow where such metadata is already saved
     SAVE_PATH,
     input_names=["input"],
     output_names=["output"]

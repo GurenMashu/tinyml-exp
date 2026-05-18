@@ -43,4 +43,4 @@ model.eval()
 with torch.no_grad():
     torch_out = model(sample_input).numpy()
 
-np.testing.assert_allclose(torch_out, outputs[0], rtol=1e-03, atol=1e-05)
+np.testing.assert_allclose(torch_out, outputs[0], rtol=1e-03, atol=1e-05)             # assertion test
