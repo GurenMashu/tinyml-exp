@@ -1,4 +1,4 @@
-# ESP32 Sensor Simulator
+# Sensor Simulator
 
 ## Overview
 - Small toolkit to generate telemetry data matching the MLP model features and run offline inference.
@@ -42,7 +42,7 @@ python3 run_inference.py /tmp/ttyV1 --model path/to/saved_model.pth --scaler pat
 ```
 
 ### Real ESP32 mode
-- If you have a physical ESP32 connected, pass its serial port instead of a PTY path:
+- If you have a physical ESP32 (or similar) connected, pass its serial port instead of a PTY path:
 
 ```bash
 python3 gui.py /dev/ttyUSB0 --baud 115200

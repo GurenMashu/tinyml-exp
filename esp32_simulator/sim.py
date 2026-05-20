@@ -26,7 +26,7 @@ class SensorControlPanel:
         self.sim_interval_ms = 1000
         self.generator_running = False
         self.log_to_file = False
-        self.log_path = os.path.join(os.getcwd(), "esp32_simulated_data.csv")
+        self.log_path = os.path.join(os.getcwd(), "data/esp32_simulated_data.csv")
 
         # Telemetry state for standalone generation
         self.state = {
