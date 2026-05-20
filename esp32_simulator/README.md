@@ -1,4 +1,4 @@
-# ESP32 Sensor Simulator — README
+# ESP32 Sensor Simulator
 
 ## Overview
 - Small toolkit to generate telemetry data matching the MLP model features and run offline inference.
@@ -10,6 +10,7 @@
 ### Standalone GUI mode
 - `sim.py` can run without any serial or PTY connection.
 - It generates varied telemetry samples internally and shows the latest line in the UI.
+- Note: standalone mode only generates data. To run model inference on that generated data, you must also run `run_inference.py` on a matching serial/PTY endpoint or use the GUI in serial mode.
 
 Run standalone:
 ```bash
@@ -37,14 +38,14 @@ python3 sim.py /tmp/ttyV0 --baud 115200
 3. Run inference on the other end:
 
 ```bash
-python3 run_inference.py /tmp/ttyV1 --model saved_telemetry_models/telemetry_mlp.pth --scaler path/to/scaler.pkl
+python3 run_inference.py /tmp/ttyV1 --model path/to/saved_model.pth --scaler path/to/scaler.pkl
 ```
 
 ### Real ESP32 mode
 - If you have a physical ESP32 connected, pass its serial port instead of a PTY path:
 
 ```bash
-python3 sim.py /dev/ttyUSB0 --baud 115200
+python3 gui.py /dev/ttyUSB0 --baud 115200
 ```
 
 Notes

@@ -19,7 +19,7 @@ import serial
 import time
 import sys
 import numpy as np
-from esp32_simulator import telemetry_inference as ti
+import telemetry_inference as ti
 
 CLASS_NAMES = [
     "normal_unoccupied",

@@ -1,4 +1,5 @@
 import os
+import joblib
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
@@ -97,6 +98,9 @@ feature_cols = ["co", "humidity", "lpg", "temp", "smoke", "light", "motion"]
 
 scaler = StandardScaler()
 df[feature_cols] = scaler.fit_transform(df[feature_cols])
+
+joblib.dump(scaler, os.path.join(OUTPUT_DIR, "scaler.pkl"))
+print("Saved scaler.pkl")
 
 #dimensionality reduction
 pca = PCA(n_components=2)
