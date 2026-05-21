@@ -4,6 +4,7 @@
 - Small toolkit to generate telemetry data matching the MLP model features and run offline inference.
 - Components:
   - `sim.py` — standalone Tkinter GUI that generates CSV lines in the order: `co,humidity,lpg,temp,smoke,light,motion`.
+  - `config.json` — the config file for sim.py, for modifying simulated data streams.
   - `telemetry_inference.py` — helpers: `load_model()`, `load_scaler()`, `predict()` for PyTorch inference.
   - `run_inference.py` — reads CSV lines from serial/PTY and runs continuous predictions using `telemetry_inference`.
 
@@ -54,6 +55,7 @@ Notes
 
 Files
 - `sim.py` — standalone telemetry generator GUI
+- `config.py` — configuration file for simulation
 - `telemetry_inference.py` — model/scaler/predict helpers
 - `run_inference.py` — serial consumer + inference runner
 

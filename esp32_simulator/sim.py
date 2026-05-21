@@ -11,11 +11,12 @@ import argparse
 import threading
 import sys
 import os
+import json
 
 
 class SensorControlPanel:
 
-    def __init__(self, port=None, baudrate=115200, use_serial=False):
+    def __init__(self, port=None, baudrate=115200, use_serial=False, config_path=None):
 
         self.running = True
         self.ser = None
@@ -23,13 +24,14 @@ class SensorControlPanel:
         self.baudrate = baudrate
         self.use_serial = use_serial
 
-        self.sim_interval_ms = 1000
+        self.config = self._load_config(config_path)
+        self.sim_interval_ms = int(self.config.get("sim_interval_ms", 1000))
         self.generator_running = False
         self.log_to_file = False
-        self.log_path = os.path.join(os.getcwd(), "data/esp32_simulated_data.csv")
+        self.log_path = self._resolve_path(self.config.get("log_path", "data/esp32_simulated_data.csv"))
 
         # Telemetry state for standalone generation
-        self.state = {
+        default_state = {
             "co": 0.002,
             "humidity": 55.0,
             "lpg": 0.002,
@@ -38,6 +40,33 @@ class SensorControlPanel:
             "light": 0,
             "motion": 0,
         }
+        initial_state = self.config.get("initial_state", {}) or {}
+        self.state = {**default_state, **initial_state}
+
+        self.default_ranges = {
+            "co": [0.0, 0.02],
+            "lpg": [0.0, 0.02],
+            "smoke": [0.0, 0.08],
+            "temp": [10.0, 40.0],
+            "humidity": [10.0, 100.0],
+        }
+        self.ranges = {**self.default_ranges, **(self.config.get("ranges") or {})}
+
+        self.default_drift_scales = {
+            "co": 0.0005,
+            "lpg": 0.0005,
+            "smoke": 0.001,
+            "temp": 0.4,
+            "humidity": 2.0,
+        }
+        self.drift_scales = {**self.default_drift_scales, **(self.config.get("drift_scales") or {})}
+
+        self.motion_on_probability = float(self.config.get("motion_on_probability", 0.08))
+        self.motion_off_probability = float(self.config.get("motion_off_probability", 0.05))
+        self.light_false_positive_probability = float(self.config.get("light_false_positive_probability", 0.1))
+        self.spike_probability = float(self.config.get("spike_probability", 0.05))
+        self.spike_smoke_range = list(self.config.get("spike_smoke_range", [0.01, 0.03]))
+        self.spike_lpg_range = list(self.config.get("spike_lpg_range", [0.001, 0.005]))
 
         # Serial Connection (only if requested)
         if self.use_serial and serial is not None:
@@ -124,6 +153,64 @@ class SensorControlPanel:
             print(f"[UNKNOWN ERROR] {e}")
             self.running = False
 
+    def _resolve_path(self, path):
+        if not path:
+            return path
+        path = os.path.expanduser(path)
+        if os.path.isabs(path):
+            return path
+        return os.path.join(os.path.dirname(__file__), path)
+
+    def _load_config(self, config_path=None):
+        default_config = {
+            "sim_interval_ms": 1000,
+            "log_path": "data/esp32_simulated_data.csv",
+            "initial_state": {
+                "co": 0.002,
+                "humidity": 55.0,
+                "lpg": 0.002,
+                "temp": 24.0,
+                "smoke": 0.01,
+                "light": 0,
+                "motion": 0,
+            },
+            "ranges": {
+                "co": [0.0, 0.02],
+                "lpg": [0.0, 0.02],
+                "smoke": [0.0, 0.08],
+                "temp": [10.0, 40.0],
+                "humidity": [10.0, 100.0],
+            },
+            "drift_scales": {
+                "co": 0.0005,
+                "lpg": 0.0005,
+                "smoke": 0.001,
+                "temp": 0.4,
+                "humidity": 2.0,
+            },
+            "motion_on_probability": 0.08,
+            "motion_off_probability": 0.05,
+            "light_false_positive_probability": 0.1,
+            "spike_probability": 0.05,
+            "spike_smoke_range": [0.01, 0.03],
+            "spike_lpg_range": [0.001, 0.005],
+        }
+        config_file = config_path or os.path.join(os.path.dirname(__file__), "config.json")
+        config_file = self._resolve_path(config_file)
+
+        if os.path.isfile(config_file):
+            try:
+                with open(config_file, encoding="utf-8") as f:
+                    loaded = json.load(f)
+                if isinstance(loaded, dict):
+                    merged = {**default_config, **loaded}
+                    return merged
+                print(f"[CONFIG WARNING] {config_file} did not contain a JSON object.")
+            except Exception as e:
+                print(f"[CONFIG WARNING] Failed to read config {config_file}: {e}")
+
+        return default_config
+
     # --------------------------------------------------
     # GUI Widgets
     # --------------------------------------------------
@@ -194,8 +281,15 @@ class SensorControlPanel:
     # Update Slider Labels
     # --------------------------------------------------
     def update_values(self, event=None):
-        # labels are updated by slider callbacks; nothing else required here
-        return
+        # Keep internal state in sync with manual slider changes,
+        # so generated values do not snap back to the previous state.
+        self.state["co"] = float(self.co_var.get())
+        self.state["lpg"] = float(self.lpg_var.get())
+        self.state["smoke"] = float(self.smoke_var.get())
+        self.state["temp"] = float(self.temp_var.get())
+        self.state["humidity"] = float(self.humidity_var.get())
+        self.state["light"] = int(self.light_var.get())
+        self.state["motion"] = int(self.motion_var.get())
 
     # --------------------------------------------------
     # Control button helpers
@@ -255,28 +349,59 @@ class SensorControlPanel:
             return value
 
         # periodic cycles and noise
-        self.state["co"] = drift(self.state["co"], 0.0005, 0.0001, 0.02)
-        self.state["lpg"] = drift(self.state["lpg"], 0.0005, 0.0001, 0.02)
-        self.state["smoke"] = drift(self.state["smoke"], 0.001, 0.0, 0.08)
-        self.state["temp"] = drift(self.state["temp"], 0.4, 10.0, 40.0)
-        self.state["humidity"] = drift(self.state["humidity"], 2.0, 10.0, 100.0)
+        self.state["co"] = drift(
+            self.state["co"],
+            self.drift_scales["co"],
+            self.ranges["co"][0],
+            self.ranges["co"][1],
+        )
+        self.state["lpg"] = drift(
+            self.state["lpg"],
+            self.drift_scales["lpg"],
+            self.ranges["lpg"][0],
+            self.ranges["lpg"][1],
+        )
+        self.state["smoke"] = drift(
+            self.state["smoke"],
+            self.drift_scales["smoke"],
+            self.ranges["smoke"][0],
+            self.ranges["smoke"][1],
+        )
+        self.state["temp"] = drift(
+            self.state["temp"],
+            self.drift_scales["temp"],
+            self.ranges["temp"][0],
+            self.ranges["temp"][1],
+        )
+        self.state["humidity"] = drift(
+            self.state["humidity"],
+            self.drift_scales["humidity"],
+            self.ranges["humidity"][0],
+            self.ranges["humidity"][1],
+        )
 
         # random occupancy events
-        if random.random() < 0.08:
+        if random.random() < self.motion_on_probability:
             self.state["motion"] = 1
-        elif random.random() < 0.05:
+        elif random.random() < self.motion_off_probability:
             self.state["motion"] = 0
 
         # light correlates with motion and some random false positives
-        if self.state["motion"] == 1 or random.random() < 0.1:
+        if self.state["motion"] == 1 or random.random() < self.light_false_positive_probability:
             self.state["light"] = 1
         else:
             self.state["light"] = 0
 
         # occasional spikes for gas/smoke
-        if random.random() < 0.05:
-            self.state["smoke"] = min(0.08, self.state["smoke"] + random.uniform(0.01, 0.03))
-            self.state["lpg"] = min(0.02, self.state["lpg"] + random.uniform(0.001, 0.005))
+        if random.random() < self.spike_probability:
+            self.state["smoke"] = min(
+                self.ranges["smoke"][1],
+                self.state["smoke"] + random.uniform(*self.spike_smoke_range),
+            )
+            self.state["lpg"] = min(
+                self.ranges["lpg"][1],
+                self.state["lpg"] + random.uniform(*self.spike_lpg_range),
+            )
 
         # update sliders to reflect generated data
         self.co_var.set(self.state["co"])
@@ -470,6 +595,12 @@ if __name__ == "__main__":
         )
 
         parser.add_argument(
+            "--config",
+            default=None,
+            help="Optional JSON config file path for interval, state, and noise parameters"
+        )
+
+        parser.add_argument(
             "--mock",
             action="store_true",
             help="Run standalone generator without serial"
@@ -481,7 +612,8 @@ if __name__ == "__main__":
         app = SensorControlPanel(
             port=args.port,
             baudrate=args.baud,
-            use_serial=use_serial
+            use_serial=use_serial,
+            config_path=args.config,
         )
 
         if app.running:

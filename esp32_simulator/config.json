@@ -1,0 +1,33 @@
+{
+  "sim_interval_ms": 1000,
+  "log_path": "esp32_simulated_data.csv",
+  "initial_state": {
+    "co": 0.002,
+    "humidity": 55.0,
+    "lpg": 0.002,
+    "temp": 24.0,
+    "smoke": 0.01,
+    "light": 0,
+    "motion": 0
+  },
+  "ranges": {
+    "co": [0.0, 0.02],
+    "lpg": [0.0, 0.02],
+    "smoke": [0.0, 0.08],
+    "temp": [10.0, 40.0],
+    "humidity": [10.0, 100.0]
+  },
+  "drift_scales": {
+    "co": 0.0005,
+    "lpg": 0.0005,
+    "smoke": 0.001,
+    "temp": 0.4,
+    "humidity": 2.0
+  },
+  "motion_on_probability": 0.08,
+  "motion_off_probability": 0.05,
+  "light_false_positive_probability": 0.1,
+  "spike_probability": 0.05,
+  "spike_smoke_range": [0.01, 0.03],
+  "spike_lpg_range": [0.001, 0.005]
+}
