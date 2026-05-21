@@ -133,7 +133,7 @@ for epoch in range(epochs):
         best_val_loss = avg_val_loss
         patience_counter = 0
         best_model_state = model.state_dict().copy()
-        torch.save(best_model_state, "saved_telemetry_models/telemetry_mlp.pth")
+        torch.save(best_model_state, "saved_models/saved_telemetry_models/telemetry_mlp.pth")
     else:
         patience_counter += 1
         if patience_counter >= 10:

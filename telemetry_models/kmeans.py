@@ -12,7 +12,7 @@ from sklearn.metrics import (
 )
 
 INPUT_DATA = "data/preprocessed_telemetry_data/processed.csv"
-SAVE_PATH = "saved_telemetry_models"
+SAVE_PATH = "saved_models/saved_telemetry_models"
 CSV_PATH = Path("comparison/telemetry_clustering_comparison.csv")
 
 os.makedirs(SAVE_PATH, exist_ok=True)
@@ -48,10 +48,10 @@ avg_latency = np.mean(latencies)
 p95_latency = np.percentile(latencies, 95)
 
 #saving model
-dump(model, "saved_telemetry_models/telemetry_kmeans.pkl")
+dump(model, "saved_models/saved_telemetry_models/telemetry_kmeans.pkl")
 
 #Finding model save size
-model_path = "saved_telemetry_models/telemetry_kmeans.pkl"
+model_path = "saved_models/saved_telemetry_models/telemetry_kmeans.pkl"
 if not os.path.exists(model_path):
     raise FileNotFoundError(f"Model file not found: {model_path}")
 size_mb = os.path.getsize(model_path) / (1024 * 1024)

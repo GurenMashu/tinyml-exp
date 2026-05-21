@@ -3,8 +3,10 @@ import torch
 import torch.onnx
 import torch.nn as nn
 
-SAVE_PATH = "saved_telemetry_models/telemetry_mlp.onnx"
+SAVE_PATH = "saved_models/saved_telemetry_models/telemetry_mlp.onnx"
 device = torch.device("cpu")               # stick with cpu for conversion to prevent unwanted tracing mechanisms in gpu assisted conversion
+
+os.makedirs("saved_models/saved_telemetry_models", exist_ok=True)
 
 class TelemetryMLP(nn.Module):
     def __init__(self, input_dim=7, num_classes=6, dropout_rate=0.3):

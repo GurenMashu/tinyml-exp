@@ -31,5 +31,5 @@ sample_input = (torch.randn(1, 7),)
 
 edge_model = litert_torch.convert(model, sample_input)
 
-os.makedirs(os.path.dirname("saved_telemetry_models/telemetry_mlp.tflite"), exist_ok=True)
-edge_model.export("saved_telemetry_models/telemetry_mlp.tflite")
+os.makedirs(os.path.dirname("saved_models/saved_telemetry_models/telemetry_mlp.tflite"), exist_ok=True)
+edge_model.export("saved_models/saved_telemetry_models/telemetry_mlp.tflite")
