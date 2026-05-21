@@ -8,11 +8,12 @@ Trying different things for building models for TinyML usecases. I have tried ou
 - `models/` - training scripts
 - `telemetry_models/` - training scripts for models trained on a specific telemetery dataset
 - `quantization/` - model quantization scripts
-- `onnx_conversion/` - scripts for onnx model conversion to onnx
-- `tflite_conversion/` - scripts for model conversion to tflite
+- `format_conversions/onnx_conversion/` - scripts for onnx model conversion to onnx
+- `format_conversions/tflite_conversion/` - scripts for model conversion to tflite
+- `format_conversions/treelite_conversion/` - scripts for model conversion to treelite format
 - `tests/` - the tests dir
 - `saved_models/`, `saved_telemetry_models/` - dir for local model saves
-- `treelite_conversion/` - scripts for model conversion to treelite format
+
 
 ## Dependencies
 
